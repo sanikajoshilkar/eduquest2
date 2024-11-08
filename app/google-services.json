@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "842395704077",
+    "firebase_url": "https://eduquest-5159b-default-rtdb.firebaseio.com",
+    "project_id": "eduquest-5159b",
+    "storage_bucket": "eduquest-5159b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:842395704077:android:70917a15876f7332046e44",
+        "android_client_info": {
+          "package_name": "com.example.eduquest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjiRNeIzAR__ITQpKOGC8PPovCXAQUZxM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:842395704077:android:9cfa5b8de8b21866046e44",
+        "android_client_info": {
+          "package_name": "com.tkiet.eduquest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjiRNeIzAR__ITQpKOGC8PPovCXAQUZxM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
