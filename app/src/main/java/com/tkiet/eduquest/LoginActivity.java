@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.tkiet.eduquest.ui.account.RegistrationActivity;
+import android.content.SharedPreferences;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -17,6 +19,10 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton;
     private FirebaseAuth mAuth;
     private TextView registerButton;
+    private SwitchMaterial rememberMeSwitch;
+    private SharedPreferences sharedPreferences;
+    private static final String PREFS_NAME = "LoginPrefs";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,8 +32,15 @@ public class LoginActivity extends AppCompatActivity {
         passwordEditText = findViewById(R.id.input_password);
         loginButton = findViewById(R.id.btn_login);
         registerButton = findViewById(R.id.registerTV);
+        rememberMeSwitch = findViewById(R.id.login_rem_switch);
 
         mAuth = FirebaseAuth.getInstance();
+        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+
+        // Check if user is already logged in
+        if (sharedPreferences.getBoolean("isLoggedIn", false)) {
+            navigateToMainActivity();
+        }
 
         loginButton.setOnClickListener(v -> loginUser());
         registerButton.setOnClickListener(v -> startActivity(new Intent(this, RegistrationActivity.class)));
@@ -46,12 +59,21 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
-                        // Navigate to main screen or dashboard
-                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                        finish();
+
+                        // Save login state if "Remember Me" is checked
+                        if (rememberMeSwitch.isChecked()) {
+                            sharedPreferences.edit().putBoolean("isLoggedIn", true).apply();
+                        }
+
+                        navigateToMainActivity();
                     } else {
                         Toast.makeText(LoginActivity.this, "Login failed", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void navigateToMainActivity() {
+        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+        finish();
     }
 }
