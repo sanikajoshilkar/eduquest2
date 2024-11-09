@@ -1,27 +1,34 @@
 package com.tkiet.eduquest.ui.account;
 
 public class VideoModel {
+
     private String videoId;
     private String title;
     private String description;
     private String tags;
     private String videoUrl;
     private String thumbnailUrl;
+    private String addedBy;
+    // Constructor (required for Firebase)
+    public VideoModel() {
+    }
 
-    // Constructor (empty for Firebase)
-    public VideoModel() {}
-
-    // Constructor
-    public VideoModel(String videoId, String title, String description, String tags, String videoUrl, String thumbnailUrl) {
-        this.videoId = videoId;
+    public VideoModel(String title, String description, String tags, String videoUrl , String addedBy) {
         this.title = title;
         this.description = description;
         this.tags = tags;
         this.videoUrl = videoUrl;
-        this.thumbnailUrl = thumbnailUrl;
+        this.addedBy=addedBy;
+    }
+    // Getter and Setter methods for all fields
+    public String getAddedBy() {
+        return addedBy;
     }
 
-    // Getter and Setter methods
+    public void setAddedBy(String addedBy) {
+        this.addedBy = addedBy;
+    }
+    // Getter and Setter for videoId
     public String getVideoId() {
         return videoId;
     }
@@ -30,6 +37,7 @@ public class VideoModel {
         this.videoId = videoId;
     }
 
+    // Getter and Setter for title
     public String getTitle() {
         return title;
     }
@@ -38,6 +46,7 @@ public class VideoModel {
         this.title = title;
     }
 
+    // Getter and Setter for description
     public String getDescription() {
         return description;
     }
@@ -46,6 +55,7 @@ public class VideoModel {
         this.description = description;
     }
 
+    // Getter and Setter for tags
     public String getTags() {
         return tags;
     }
@@ -54,6 +64,7 @@ public class VideoModel {
         this.tags = tags;
     }
 
+    // Getter and Setter for videoUrl
     public String getVideoUrl() {
         return videoUrl;
     }
@@ -62,6 +73,7 @@ public class VideoModel {
         this.videoUrl = videoUrl;
     }
 
+    // Getter and Setter for thumbnailUrl
     public String getThumbnailUrl() {
         return thumbnailUrl;
     }

@@ -1,27 +1,50 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Video View -->
     <VideoView
         android:id="@+id/videoView"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_marginBottom="16dp" />
 
+    <!-- Play/Pause Button -->
+    <Button
+        android:id="@+id/playPauseButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Play" />
+
+    <!-- Progress Bar -->
+    <SeekBar
+        android:id="@+id/videoSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="100" />
+
+    <!-- Thumbnail Section -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Thumbnail :"
-        />
+        android:paddingBottom="8dp" />
+
     <ImageView
         android:id="@+id/thumbnailImageView"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_marginBottom="16dp" />
 
+    <Button
+        android:id="@+id/changeThumbnailButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Change Thumbnail" />
+
+    <!-- Text Fields for Video Information -->
     <EditText
         android:id="@+id/titleEditText"
         android:layout_width="match_parent"
@@ -43,6 +66,10 @@
         android:hint="Enter tags"
         android:padding="8dp" />
 
-    <!-- Add Save Button or any other buttons as needed -->
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save" />
 
 </LinearLayout>
