@@ -7,9 +7,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.SeekBar;
 import android.widget.Toast;
 import android.widget.VideoView;
+import android.widget.MediaController;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,14 +31,12 @@ public class EditVideoActivity extends AppCompatActivity {
     private VideoView videoView;
     private EditText titleEditText, descriptionEditText, tagsEditText;
     private ImageView thumbnailImageView;
-    private Button saveButton, changeThumbnailButton, playPauseButton;
-    private SeekBar videoSeekBar;
+    private Button saveButton, changeThumbnailButton;
     private String videoId;
     private DatabaseReference databaseReference;
     private StorageReference storageReference;
-    private boolean isPlaying = false;
     private Uri newThumbnailUri;
-    private String videoUrl;  // Declare videoUrl variable to store the video URL
+    private String videoUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +51,6 @@ public class EditVideoActivity extends AppCompatActivity {
         thumbnailImageView = findViewById(R.id.thumbnailImageView);
         saveButton = findViewById(R.id.saveButton);
         changeThumbnailButton = findViewById(R.id.changeThumbnailButton);
-        playPauseButton = findViewById(R.id.playPauseButton);
-        videoSeekBar = findViewById(R.id.videoSeekBar);
 
         // Get video ID from Intent
         videoId = getIntent().getStringExtra("videoId");
@@ -67,25 +63,18 @@ public class EditVideoActivity extends AppCompatActivity {
             Toast.makeText(this, "Video ID is missing", Toast.LENGTH_SHORT).show();
         }
 
-        // Play/Pause button logic
-        playPauseButton.setOnClickListener(v -> {
-            if (isPlaying) {
-                videoView.pause();
-                playPauseButton.setText("Play");
-            } else {
-                videoView.start();
-                playPauseButton.setText("Pause");
-            }
-            isPlaying = !isPlaying;
-        });
+        // MediaController to add play/pause, seekbar, and volume controls
+        MediaController mediaController = new MediaController(this);
+        mediaController.setAnchorView(videoView);
+        videoView.setMediaController(mediaController); // Attach MediaController to VideoView
 
-        // Change thumbnail button logic
+        // Change Thumbnail Button Logic
         changeThumbnailButton.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             startActivityForResult(intent, 1);
         });
 
-        // Save Button logic to save the data
+        // Save Button Logic to save the data
         saveButton.setOnClickListener(v -> {
             String title = titleEditText.getText().toString();
             String description = descriptionEditText.getText().toString();
@@ -110,8 +99,10 @@ public class EditVideoActivity extends AppCompatActivity {
                     if (video != null) {
                         // Set video URL to the VideoView
                         videoUrl = video.getVideoUrl();  // Assign the video URL to the videoUrl variable
-                        videoView.setVideoPath(videoUrl);
-                        videoView.start();  // Start playing the video
+                        videoView.setVideoPath(videoUrl); // Set the video URL for VideoView
+
+                        // Start playing the video
+                        videoView.start();
 
                         // Set other fields
                         titleEditText.setText(video.getTitle());
@@ -141,7 +132,7 @@ public class EditVideoActivity extends AppCompatActivity {
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         // Create a new VideoModel object and set the fields
-        VideoModel video = new VideoModel(title, description, tags, videoUrl, currentUserId);  // Pass addedBy as the currentUserId
+        VideoModel video = new VideoModel(title, description, tags, videoUrl, currentUserId);
 
         // If a new thumbnail is selected, upload it to Firebase Storage
         if (newThumbnailUri != null) {

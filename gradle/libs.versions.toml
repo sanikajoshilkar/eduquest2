@@ -1,5 +1,6 @@
 [versions]
 agp = "8.6.1"
+exoplayer = "2.18.2"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
@@ -8,6 +9,7 @@ material = "1.12.0"
 constraintlayout = "2.1.4"
 lifecycleLivedataKtx = "2.8.6"
 lifecycleViewmodelKtx = "2.8.6"
+media3UiVersion = "1.X.X"
 navigationFragment = "2.8.3"
 navigationUi = "2.8.3"
 activity = "1.9.3"
@@ -15,8 +17,12 @@ googleGmsGoogleServices = "4.4.2"
 firebaseDatabase = "21.0.0"
 firebaseStorage = "21.0.1"
 firebaseAuth = "23.1.0"
+media3Ui = "1.4.1"
 
 [libraries]
+androidx-media3-exoplayer-dash = { module = "androidx.media3:media3-exoplayer-dash", version.ref = "media3UiVersion" }
+androidx-media3-ui-v1xx = { module = "androidx.media3:media3-ui", version.ref = "media3UiVersion" }
+exoplayer = { module = "com.google.android.exoplayer2:exoplayer", version.ref = "exoplayer" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -31,6 +37,7 @@ activity = { group = "androidx.activity", name = "activity", version.ref = "acti
 firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
+media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3Ui" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

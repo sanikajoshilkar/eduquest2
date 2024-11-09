@@ -48,6 +48,7 @@ dependencies {
     implementation(libs.firebase.database)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.auth)
+    implementation(libs.media3.ui)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -57,6 +58,7 @@ dependencies {
     annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
     implementation("com.arthenica:mobile-ffmpeg-full:4.4")
     implementation("com.squareup.picasso:picasso:2.71828")
-    implementation("com.google.android.exoplayer2:exoplayer:2.18.2")
+
+
 
 }

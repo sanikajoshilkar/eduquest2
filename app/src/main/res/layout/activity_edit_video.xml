@@ -4,26 +4,12 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- Video View -->
+    <!-- VideoView for video playback -->
     <VideoView
         android:id="@+id/videoView"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_marginBottom="16dp" />
-
-    <!-- Play/Pause Button -->
-    <Button
-        android:id="@+id/playPauseButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Play" />
-
-    <!-- Progress Bar -->
-    <SeekBar
-        android:id="@+id/videoSeekBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:max="100" />
 
     <!-- Thumbnail Section -->
     <TextView
@@ -71,5 +57,4 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Save" />
-
 </LinearLayout>
