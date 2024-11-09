@@ -9,5 +9,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="custom_color_primary">#643AE7</color>
     <color name="blue_accent_300">#5CC1EE</color>
+    <color name="buttonDisabledBg">#F0AB89</color>
+    <color name="buttonEnabledBg">#FF6F22</color>
 
 </resources>
