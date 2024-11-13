@@ -17,19 +17,35 @@
         app:contentInsetStartWithNavigation="0dp"
         app:titleTextColor="@color/black">
 
-        <!-- Toggle Button for Profile/Skills Filter -->
-        <ToggleButton
-            android:id="@+id/toggleFilter"
-            android:layout_width="80dp"
+        <!-- RadioGroup for Profile/Skills Filter -->
+        <RadioGroup
+            android:id="@+id/radioGroupFilter"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:layout_marginStart="16dp"
-            android:textOff="Skills"
-            android:textOn="Profile"
-            android:fontFamily="@font/monsterrat_regular"
-            android:checked="true"
-        android:textColor="@color/black"
-        android:backgroundTint="@color/blue_accent_300"
-        android:padding="8dp" />
+            android:gravity="center_vertical">
+
+            <!-- Profile RadioButton -->
+            <RadioButton
+                android:id="@+id/radioProfile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile"
+                android:checked="true"
+                android:fontFamily="@font/monsterrat_regular"
+                android:textColor="@color/black" />
+
+            <!-- Skills RadioButton -->
+            <RadioButton
+                android:id="@+id/radioSkills"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Skills"
+                android:layout_marginTop="-8dp"
+                android:fontFamily="@font/monsterrat_regular"
+                android:textColor="@color/black" />
+        </RadioGroup>
 
         <!-- Search TextInputLayout and EditText for Search Bar -->
         <com.google.android.material.textfield.TextInputLayout
@@ -51,7 +67,7 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/home_search_edit_text"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:hint="Search Profile"
                 android:imeOptions="actionSearch"
                 android:inputType="text"

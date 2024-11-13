@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -43,14 +44,20 @@ public class HomeFragment extends Fragment {
         recyclerViewProfiles = view.findViewById(R.id.recyclerViewProfiles);
         recyclerViewProfiles.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
-
         profileList = new ArrayList<>();
         filteredList = new ArrayList<>();
         profileAdapter = new ProfileAdapter(filteredList, getContext());
         recyclerViewProfiles.setAdapter(profileAdapter);
 
-        toggleFilter = view.findViewById(R.id.toggleFilter);
+        // Replace ToggleButton with RadioGroup
+        RadioGroup radioGroupFilter = view.findViewById(R.id.radioGroupFilter);
         searchField = view.findViewById(R.id.home_search_edit_text); // Add an EditText for search
+
+        // Set listener for radio button changes
+        radioGroupFilter.setOnCheckedChangeListener((group, checkedId) -> {
+            // When the selection changes, filter the profiles based on the selected option
+            filterProfiles(searchField.getText().toString());
+        });
 
         loadUserProfiles();
 
@@ -70,6 +77,7 @@ public class HomeFragment extends Fragment {
 
         return view;
     }
+
 
     private void loadUserProfiles() {
         // Get the current user
@@ -112,7 +120,11 @@ public class HomeFragment extends Fragment {
 
     private void filterProfiles(String query) {
         filteredList.clear();
-        boolean filterByProfile = toggleFilter.isChecked();
+
+        // Get the selected filter option from the RadioGroup
+        RadioGroup radioGroupFilter = getView().findViewById(R.id.radioGroupFilter);
+        int selectedId = radioGroupFilter.getCheckedRadioButtonId();
+        boolean filterByProfile = selectedId == R.id.radioProfile;
 
         for (UserProfile profile : profileList) {
             if (filterByProfile) {
@@ -130,4 +142,5 @@ public class HomeFragment extends Fragment {
 
         profileAdapter.notifyDataSetChanged();
     }
+
 }
