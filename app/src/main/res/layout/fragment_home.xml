@@ -14,12 +14,12 @@
         android:layout_height="wrap_content"
         app:layout_scrollFlags="scroll|enterAlways" />
 
-    <!-- RecyclerView to display user profiles, below the app bar -->
+    <!-- RecyclerView with bottom padding to prevent overlapping with BottomNavigationView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewProfiles"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="8dp"
-        android:layout_marginTop="56dp" /> <!-- Adjust this value to the height of the app bar -->
-
+        android:layout_marginTop="56dp"
+    android:paddingBottom="52dp" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -22,13 +22,18 @@ import com.tkiet.eduquest.R;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.EditText;
+import android.widget.ToggleButton;
 public class HomeFragment extends Fragment {
 
     private RecyclerView recyclerViewProfiles;
     private DatabaseReference usersRef;
-    private List<UserProfile> profileList;
+    private List<UserProfile> profileList, filteredList;
     private ProfileAdapter profileAdapter;
+    private ToggleButton toggleFilter;
+    private EditText searchField;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -37,28 +42,50 @@ public class HomeFragment extends Fragment {
         recyclerViewProfiles = view.findViewById(R.id.recyclerViewProfiles);
         recyclerViewProfiles.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Initialize the profile list and adapter
         profileList = new ArrayList<>();
-        profileAdapter = new ProfileAdapter(profileList, getContext());
+        filteredList = new ArrayList<>();
+        profileAdapter = new ProfileAdapter(filteredList, getContext());
         recyclerViewProfiles.setAdapter(profileAdapter);
 
+        toggleFilter = view.findViewById(R.id.toggleFilter);
+        searchField = view.findViewById(R.id.home_search_edit_text); // Add an EditText for search
+
         loadUserProfiles();
+
+        // Add TextWatcher for search functionality
+        searchField.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                filterProfiles(charSequence.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
 
         return view;
     }
 
     private void loadUserProfiles() {
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        // Get the current user
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() == null) {
+            Toast.makeText(getContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
+            return; // Exit if the user is not logged in
+        }
+
+        String currentUserId = auth.getCurrentUser().getUid();
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
 
         usersRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                profileList.clear();
                 if (snapshot.exists()) {
-                    Log.d("HomeFragment", "data found.");
-                    profileList.clear();
                     for (DataSnapshot userSnapshot : snapshot.getChildren()) {
-                        // Avoid adding current user's profile
                         if (!userSnapshot.getKey().equals(currentUserId)) {
                             UserProfile userProfile = userSnapshot.getValue(UserProfile.class);
                             if (userProfile != null) {
@@ -67,10 +94,8 @@ public class HomeFragment extends Fragment {
                             }
                         }
                     }
-                    Log.d("HomeFragment", "Profile list size: " + profileList.size());
-                    profileAdapter.notifyDataSetChanged();
+                    filterProfiles(searchField.getText().toString());
                 } else {
-                    Log.d("HomeFragment", "No data found.");
                     Toast.makeText(getContext(), "No profiles available", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -78,8 +103,29 @@ public class HomeFragment extends Fragment {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(getContext(), "Failed to load profiles", Toast.LENGTH_SHORT).show();
-                Log.e("HomeFragment", "Error: " + error.getMessage());
             }
         });
+    }
+
+
+    private void filterProfiles(String query) {
+        filteredList.clear();
+        boolean filterByProfile = toggleFilter.isChecked();
+
+        for (UserProfile profile : profileList) {
+            if (filterByProfile) {
+                // Filter by profile name
+                if (profile.getName() != null && profile.getName().toLowerCase().contains(query.toLowerCase())) {
+                    filteredList.add(profile);
+                }
+            } else {
+                // Filter by skills
+                if (profile.getSkills() != null && profile.getSkills().toLowerCase().contains(query.toLowerCase())) {
+                    filteredList.add(profile);
+                }
+            }
+        }
+
+        profileAdapter.notifyDataSetChanged();
     }
 }
