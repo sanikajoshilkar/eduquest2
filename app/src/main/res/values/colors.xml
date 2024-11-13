@@ -11,5 +11,6 @@
     <color name="blue_accent_300">#5CC1EE</color>
     <color name="buttonDisabledBg">#F0AB89</color>
     <color name="buttonEnabledBg">#FF6F22</color>
+    <color name="gray">#999999</color>
 
 </resources>
