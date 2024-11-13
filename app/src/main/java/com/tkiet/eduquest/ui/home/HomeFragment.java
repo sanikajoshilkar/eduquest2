@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -40,7 +41,8 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         recyclerViewProfiles = view.findViewById(R.id.recyclerViewProfiles);
-        recyclerViewProfiles.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerViewProfiles.setLayoutManager(new GridLayoutManager(getContext(), 2));
+
 
         profileList = new ArrayList<>();
         filteredList = new ArrayList<>();
