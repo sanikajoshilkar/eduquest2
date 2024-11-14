@@ -2,6 +2,7 @@ package com.tkiet.eduquest.ui.account;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +29,7 @@ import com.tkiet.eduquest.R;
 public class AccountFragment extends Fragment {
 
     private FirebaseAuth auth;
-    private DatabaseReference databaseReference;
+    private DatabaseReference databaseReference, likesReference;
     private ImageView profileImageView, likeIcon;
     private TextView profileName, likeCount;
     private CardView editProfile, myVideos, addVideo, signOut;
@@ -50,13 +51,16 @@ public class AccountFragment extends Fragment {
             String userId = currentUser.getUid();
             databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(userId);
             loadUserProfile();
+
+            // Initialize Likes reference
+            likesReference = FirebaseDatabase.getInstance().getReference("Likes").child(userId);
+            loadLikeCount(userId);  // Load the like count for the current user
         }
 
         // Initialize views
         profileImageView = view.findViewById(R.id.imageView);
         profileName = view.findViewById(R.id.profile_name);
-      //  likeIcon = view.findViewById(R.id.like_icon);
-       // likeCount = view.findViewById(R.id.like_count);
+        likeCount = view.findViewById(R.id.like_count); // Assuming this is the TextView to show like count
         editProfile = view.findViewById(R.id.account_profile_tv);
         myVideos = view.findViewById(R.id.my_videos);
         addVideo = view.findViewById(R.id.add_video);
@@ -91,6 +95,33 @@ public class AccountFragment extends Fragment {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(getContext(), "Failed to load profile", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadLikeCount(String userId) {
+        // Query the "Likes" node for the current user's like count
+        DatabaseReference userLikesRef = FirebaseDatabase.getInstance().getReference("Likes").child(userId);
+
+        userLikesRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Integer likeCountValue = snapshot.child("likeCount").getValue(Integer.class);
+                    Log.d("account fragment",likeCountValue.toString());
+                    if (likeCountValue != null) {
+                        likeCount.setText(String.valueOf(likeCountValue));
+                    } else {
+                        likeCount.setText("0");  // If no like count exists, display 0
+                    }
+                } else {
+                    likeCount.setText("0");  // If "Likes" node does not exist for the user, display 0
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getContext(), "Failed to load like count", Toast.LENGTH_SHORT).show();
             }
         });
     }

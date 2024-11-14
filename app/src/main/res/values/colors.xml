@@ -12,5 +12,6 @@
     <color name="buttonDisabledBg">#F0AB89</color>
     <color name="buttonEnabledBg">#FF6F22</color>
     <color name="gray">#999999</color>
+    <color name="Red">#E91E63</color>
 
 </resources>
