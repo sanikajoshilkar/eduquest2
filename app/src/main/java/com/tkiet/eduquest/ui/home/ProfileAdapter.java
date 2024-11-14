@@ -13,7 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.tkiet.eduquest.ProfileDetailActivity;
 import com.tkiet.eduquest.R;
 
 import java.util.List;

@@ -18,7 +18,10 @@
         android:theme="@style/Theme.Eduquest"
         tools:targetApi="31">
         <activity
-            android:name=".ProfileDetailActivity"
+            android:name=".ui.home.ShowVideoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.home.ProfileDetailActivity"
             android:exported="false" />
         <activity
             android:name=".ui.account.EditVideoActivity"

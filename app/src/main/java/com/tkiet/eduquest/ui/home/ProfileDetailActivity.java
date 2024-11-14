@@ -1,4 +1,4 @@
-package com.tkiet.eduquest;
+package com.tkiet.eduquest.ui.home;
 
 import android.os.Bundle;
 import android.widget.ImageView;
@@ -26,9 +26,9 @@ import java.util.List;
 public class ProfileDetailActivity extends AppCompatActivity {
 
     private ImageView profileImageView;
-    private TextView nameTextView, phoneTextView, skillsTextView;
+    private TextView nameTextView, skillsTextView;
     private RecyclerView videosRecyclerView;
-    private VideoAdapter videosAdapter;
+    private VideosAdapter videosAdapter;
     private List<VideoModel> uploadedVideos;
     private String userId;
 
@@ -39,7 +39,6 @@ public class ProfileDetailActivity extends AppCompatActivity {
 
         profileImageView = findViewById(R.id.profileImageView);
         nameTextView = findViewById(R.id.nameTextView);
-        phoneTextView = findViewById(R.id.phoneTextView);
         skillsTextView = findViewById(R.id.skillsTextView);
         videosRecyclerView = findViewById(R.id.videosRecyclerView);
 
@@ -68,7 +67,6 @@ public class ProfileDetailActivity extends AppCompatActivity {
 
                     Glide.with(ProfileDetailActivity.this).load(imageUrl).into(profileImageView);
                     nameTextView.setText(name);
-                    phoneTextView.setText(phone);
                     skillsTextView.setText(skills);
                 } else {
                     Toast.makeText(ProfileDetailActivity.this, "User not found", Toast.LENGTH_SHORT).show();
@@ -92,10 +90,16 @@ public class ProfileDetailActivity extends AppCompatActivity {
                 uploadedVideos.clear();
                 for (DataSnapshot videoSnapshot : snapshot.getChildren()) {
                     VideoModel video = videoSnapshot.getValue(VideoModel.class);
-                    uploadedVideos.add(video);
+
+                    // Check if video is not null before setting the videoId
+                    if (video != null) {
+                        video.setVideoId(videoSnapshot.getKey()); // Set the unique key as videoId
+                        uploadedVideos.add(video);
+                    }
                 }
+
                 // Pass context and video list to VideoAdapter
-                videosAdapter = new VideoAdapter(ProfileDetailActivity.this, uploadedVideos);
+                videosAdapter = new VideosAdapter(ProfileDetailActivity.this, uploadedVideos);
                 videosRecyclerView.setLayoutManager(new LinearLayoutManager(ProfileDetailActivity.this));
                 videosRecyclerView.setAdapter(videosAdapter);
             }
@@ -106,5 +110,6 @@ public class ProfileDetailActivity extends AppCompatActivity {
             }
         });
     }
+
 
 }

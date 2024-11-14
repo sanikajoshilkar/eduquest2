@@ -31,7 +31,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Video Title"
-                android:textSize="16sp"
+                android:fontFamily="@font/monsterrat_bold"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -39,17 +40,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Video Description"
+                android:fontFamily="@font/monsterrat_regular"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/deleteButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Delete"
-                android:layout_marginTop="8dp"
-                android:backgroundTint="@android:color/holo_red_light"
-                android:textColor="@android:color/white" />
+
         </LinearLayout>
     </LinearLayout>
 
