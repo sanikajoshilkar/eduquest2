@@ -1,125 +1,173 @@
 package com.tkiet.eduquest.ui.dashboard;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.tkiet.eduquest.R;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class DashboardFragment extends Fragment {
 
-    private RecyclerView companiesRecyclerView;
-    private FloatingActionButton addFab;
-    private DatabaseReference companiesReference;
-    private List<String> companyList;
-    private CompanyAdapter companyAdapter;
+    private DatabaseReference companyRef;
+    private DatabaseReference userRef;
+    private ArrayList<String> companySuggestions;
+    private ArrayAdapter<String> companyAdapter;
+    private ArrayList<String> companyNames;
+    private CompanyAdapter recyclerAdapter;
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_dashboard, container, false);
 
-        companiesRecyclerView = view.findViewById(R.id.companies_recycler_view);
-        addFab = view.findViewById(R.id.fab_add_company);
+        // Initialize Firebase references
+        companyRef = FirebaseDatabase.getInstance().getReference("Companies");
+        userRef = FirebaseDatabase.getInstance().getReference("Users");
 
-        companiesReference = FirebaseDatabase.getInstance().getReference("Companies");
+        // Initialize RecyclerView
+        RecyclerView companyRecyclerView = root.findViewById(R.id.companyRecyclerView);
+        companyRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        companyNames = new ArrayList<>();
+        recyclerAdapter = new CompanyAdapter(companyNames, requireContext()); // Pass context as the second parameter
+        companyRecyclerView.setAdapter(recyclerAdapter);
 
-        companyList = new ArrayList<>();
-        companyAdapter = new CompanyAdapter(companyList, getContext());
 
-        companiesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        companiesRecyclerView.setAdapter(companyAdapter);
+        // Floating Action Button to open dialog
+        root.findViewById(R.id.addCompanyFab).setOnClickListener(v -> openAddCompanyDialog());
 
-        // Load Companies
-        loadCompanies();
+        // Fetch and display company names
+        fetchCompanyNames();
 
-        // FAB Click Listener
-        addFab.setOnClickListener(v -> showAddCompanyDialog());
-
-        return view;
+        return root;
     }
 
-    private void loadCompanies() {
-        companiesReference.addValueEventListener(new ValueEventListener() {
+    private void fetchCompanyNames() {
+        companyRef.addValueEventListener(new com.google.firebase.database.ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                companyList.clear();
+                companyNames.clear();
                 for (DataSnapshot companySnapshot : snapshot.getChildren()) {
-                    companyList.add(companySnapshot.getKey());
+                    companyNames.add(companySnapshot.getKey());
                 }
-                companyAdapter.notifyDataSetChanged();
+                recyclerAdapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Failed to load companies", Toast.LENGTH_SHORT).show();
+            public void onCancelled(@NonNull com.google.firebase.database.DatabaseError error) {
+                Log.e("DashboardFragment", "Failed to fetch company names: " + error.getMessage());
             }
         });
     }
 
-    private void showAddCompanyDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Add Company and Question");
-
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_company, null, false);
+    private void openAddCompanyDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_company, null);
         builder.setView(dialogView);
 
-        EditText companyNameEditText = dialogView.findViewById(R.id.edit_text_company_name);
-        EditText questionEditText = dialogView.findViewById(R.id.edit_text_question);
+        AutoCompleteTextView companyName = dialogView.findViewById(R.id.autoCompleteCompanyName);
+        LinearLayout questionsLayout = dialogView.findViewById(R.id.questionsLayout);
+        ImageView addQuestionBtn = dialogView.findViewById(R.id.addQuestionBtn);
 
-        builder.setPositiveButton("Add", (dialog, which) -> {
-            String companyName = companyNameEditText.getText().toString().trim();
-            String question = questionEditText.getText().toString().trim();
+        // Populate AutoComplete suggestions
+        fetchCompanySuggestions();
+        companyAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, companySuggestions);
+        companyName.setAdapter(companyAdapter);
 
-            if (TextUtils.isEmpty(companyName) || TextUtils.isEmpty(question)) {
-                Toast.makeText(getContext(), "Fields cannot be empty", Toast.LENGTH_SHORT).show();
+        // Add new EditText for questions
+        addQuestionBtn.setOnClickListener(v -> addNewQuestionField(questionsLayout));
+
+        builder.setPositiveButton("Save", (dialog, which) -> {
+            String company = companyName.getText().toString().trim();
+            if (TextUtils.isEmpty(company)) {
+                Toast.makeText(requireContext(), "Company name is required!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            addQuestionToDatabase(companyName, question);
+            ArrayList<String> questions = new ArrayList<>();
+            for (int i = 0; i < questionsLayout.getChildCount(); i++) {
+                EditText questionField = (EditText) questionsLayout.getChildAt(i);
+                String question = questionField.getText().toString().trim();
+                if (!TextUtils.isEmpty(question)) {
+                    questions.add(question);
+                }
+            }
+
+            if (questions.isEmpty()) {
+                Toast.makeText(requireContext(), "At least one question is required!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            saveCompanyQuestions(company, questions);
         });
 
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
-
+        builder.setNegativeButton("Cancel", null);
         builder.create().show();
     }
 
-    private void addQuestionToDatabase(String companyName, String question) {
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    private void addNewQuestionField(LinearLayout questionsLayout) {
+        EditText newQuestionField = new EditText(requireContext());
+        newQuestionField.setHint("Enter question");
+        newQuestionField.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+        questionsLayout.addView(newQuestionField);
+    }
 
-        String questionId = companiesReference.child(companyName).push().getKey();
-        if (questionId != null) {
-            Map<String, Object> questionData = new HashMap<>();
-            questionData.put("question", question);
-            questionData.put("addedBy", uid);
+    private void fetchCompanySuggestions() {
+        companySuggestions = new ArrayList<>();
+        companyRef.addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot companySnapshot : snapshot.getChildren()) {
+                    companySuggestions.add(companySnapshot.getKey());
+                }
+                if (companyAdapter != null) {
+                    companyAdapter.notifyDataSetChanged();
+                }
+            }
 
-            companiesReference.child(companyName).child(questionId).setValue(questionData)
-                    .addOnSuccessListener(unused -> Toast.makeText(getContext(), "Question added", Toast.LENGTH_SHORT).show())
-                    .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to add question", Toast.LENGTH_SHORT).show());
-        }
+            @Override
+            public void onCancelled(@NonNull com.google.firebase.database.DatabaseError error) {
+                Log.e("DashboardFragment", "Failed to fetch company suggestions: " + error.getMessage());
+            }
+        });
+    }
+
+    private void saveCompanyQuestions(String company, ArrayList<String> questions) {
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String questionsString = TextUtils.join("\n", questions);
+
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("addedBy", currentUserId);
+        data.put("questions", questionsString);
+
+        companyRef.child(company).push().setValue(data).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Toast.makeText(requireContext(), "Questions added successfully!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(requireContext(), "Failed to add questions.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

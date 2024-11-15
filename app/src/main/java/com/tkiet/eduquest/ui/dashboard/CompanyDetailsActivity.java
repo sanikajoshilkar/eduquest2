@@ -58,7 +58,7 @@ public class CompanyDetailsActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 questionList.clear();
                 for (DataSnapshot questionSnapshot : snapshot.getChildren()) {
-                    String questionText = questionSnapshot.child("question").getValue(String.class);
+                    String questionText = questionSnapshot.child("questions").getValue(String.class);
                     String addedByUid = questionSnapshot.child("addedBy").getValue(String.class);
 
                     if (questionText != null && addedByUid != null) {
