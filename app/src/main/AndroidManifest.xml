@@ -41,6 +41,10 @@
         <activity
             android:name=".LoginActivity"
             android:exported="false" />
+
+        <activity android:name=".ui.dashboard.CompanyDetailsActivity"
+            android:exported="false"/>
+
         <activity
             android:name=".SplashScreenActivity"
             android:exported="true">
