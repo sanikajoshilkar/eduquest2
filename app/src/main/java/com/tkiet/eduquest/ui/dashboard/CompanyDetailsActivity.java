@@ -34,6 +34,25 @@ public class CompanyDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_company_details);
 
+        // Initialize toolbar and set title
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Enable the navigation icon
+
+        // Handle navigation icon (logout button) click
+        toolbar.setNavigationOnClickListener(v -> {
+            finish(); // Go back to the previous activity
+        });
+
+        // Retrieve the company name and set it in the toolbar title
+        String companyName = getIntent().getStringExtra("companyName");
+        if (companyName != null) {
+            toolbar.setTitle(companyName);
+        } else {
+            Toast.makeText(this, "Company not found", Toast.LENGTH_SHORT).show();
+        }
+
+        // Initialize RecyclerView
         questionsRecyclerView = findViewById(R.id.questions_recycler_view);
         questionsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -41,16 +60,16 @@ public class CompanyDetailsActivity extends AppCompatActivity {
         questionAdapter = new QuestionAdapter(questionList, this);
         questionsRecyclerView.setAdapter(questionAdapter);
 
+        // Firebase references
         companiesReference = FirebaseDatabase.getInstance().getReference("Companies");
         usersReference = FirebaseDatabase.getInstance().getReference("Users");
 
-        String companyName = getIntent().getStringExtra("companyName");
+        // Load questions for the company
         if (companyName != null) {
             loadQuestions(companyName);
-        } else {
-            Toast.makeText(this, "Company not found", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     private void loadQuestions(String companyName) {
         companiesReference.child(companyName).addValueEventListener(new ValueEventListener() {

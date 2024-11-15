@@ -36,6 +36,7 @@ public class HomeFragment extends Fragment {
     private ProfileAdapter profileAdapter;
     private ToggleButton toggleFilter;
     private EditText searchField;
+    private RadioGroup radioGroupFilter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -49,13 +50,13 @@ public class HomeFragment extends Fragment {
         profileAdapter = new ProfileAdapter(filteredList, getContext());
         recyclerViewProfiles.setAdapter(profileAdapter);
 
-        // Replace ToggleButton with RadioGroup
-        RadioGroup radioGroupFilter = view.findViewById(R.id.radioGroupFilter);
+        // Initialize the RadioGroup here
+        radioGroupFilter = view.findViewById(R.id.radioGroupFilter);
+
         searchField = view.findViewById(R.id.home_search_edit_text); // Add an EditText for search
 
         // Set listener for radio button changes
         radioGroupFilter.setOnCheckedChangeListener((group, checkedId) -> {
-            // When the selection changes, filter the profiles based on the selected option
             filterProfiles(searchField.getText().toString());
         });
 
@@ -77,6 +78,7 @@ public class HomeFragment extends Fragment {
 
         return view;
     }
+
 
 
     private void loadUserProfiles() {
@@ -121,8 +123,7 @@ public class HomeFragment extends Fragment {
     private void filterProfiles(String query) {
         filteredList.clear();
 
-        // Get the selected filter option from the RadioGroup
-        RadioGroup radioGroupFilter = getView().findViewById(R.id.radioGroupFilter);
+        // Use the class-level variable
         int selectedId = radioGroupFilter.getCheckedRadioButtonId();
         boolean filterByProfile = selectedId == R.id.radioProfile;
 
@@ -142,5 +143,6 @@ public class HomeFragment extends Fragment {
 
         profileAdapter.notifyDataSetChanged();
     }
+
 
 }
