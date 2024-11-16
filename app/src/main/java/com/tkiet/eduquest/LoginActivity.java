@@ -22,7 +22,7 @@ public class LoginActivity extends AppCompatActivity {
     private SwitchMaterial rememberMeSwitch;
     private SharedPreferences sharedPreferences;
     private static final String PREFS_NAME = "LoginPrefs";
-
+    private TextView forgotPasswordTextView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +33,8 @@ public class LoginActivity extends AppCompatActivity {
         loginButton = findViewById(R.id.btn_login);
         registerButton = findViewById(R.id.registerTV);
         rememberMeSwitch = findViewById(R.id.login_rem_switch);
+        forgotPasswordTextView = findViewById(R.id.forgotPassword);
+        forgotPasswordTextView.setOnClickListener(v -> showForgotPasswordDialog());
 
         mAuth = FirebaseAuth.getInstance();
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
@@ -77,4 +79,44 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(new Intent(LoginActivity.this, MainActivity.class));
         finish();
     }
+    private void showForgotPasswordDialog() {
+        // Create an AlertDialog builder
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        builder.setTitle("Forgot Password");
+
+        // Add an input field for the email
+        final EditText emailInput = new EditText(this);
+        emailInput.setHint("Enter your email");
+        builder.setView(emailInput);
+
+        // Set the positive button for sending the reset link
+        builder.setPositiveButton("Send Reset Link", (dialog, which) -> {
+            String email = emailInput.getText().toString().trim();
+
+            if (email.isEmpty()) {
+                Toast.makeText(LoginActivity.this, "Please enter your email", Toast.LENGTH_SHORT).show();
+            } else {
+                sendPasswordResetEmail(email);
+            }
+        });
+
+        // Set a cancel button
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+        // Show the dialog
+        builder.create().show();
+    }
+
+    private void sendPasswordResetEmail(String email) {
+        mAuth.sendPasswordResetEmail(email)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(LoginActivity.this, "Password reset email sent", Toast.LENGTH_SHORT).show();
+                    } else {
+                        String errorMessage = task.getException() != null ? task.getException().getMessage() : "Failed to send reset email";
+                        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
 }
