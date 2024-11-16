@@ -14,6 +14,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -33,12 +36,20 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.tkiet.eduquest.R;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class EditprofileActivity extends AppCompatActivity {
 
-    private TextInputEditText editName, editSkills, editPhone;
+    private TextInputEditText editName, skillsInput;
     private ImageView profileImageView;
-    private Button selectProfilePhotoButton;
+    private Button selectProfilePhotoButton, addSkillButton;
     private MaterialButton btnSaveProfile;
+    private RecyclerView skillsRecyclerView;
+
+    private SkillsAdapter skillsAdapter;
+    private List<String> skillsList = new ArrayList<>();
 
     private DatabaseReference databaseReference;
     private FirebaseUser currentUser;
@@ -46,34 +57,76 @@ public class EditprofileActivity extends AppCompatActivity {
 
     private Uri imageUri;
     private ProgressDialog progressDialog;
+    private TextInputEditText certificationsInput;
+    private Button addCertificationButton;
+    private RecyclerView certificationsRecyclerView;
+    private List<String> certificationsList = new ArrayList<>();
+    private CertificationsAdapter certificationsAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editprofile);
 
-        // Initialize Firebase references
+        // Firebase setup
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(currentUser.getUid());
         storageReference = FirebaseStorage.getInstance().getReference("ProfileImages").child(currentUser.getUid());
 
         // Initialize views
         editName = findViewById(R.id.edit_profile_name);
-        editSkills = findViewById(R.id.edit_skills);
-        editPhone = findViewById(R.id.edit_profile_phone);
+        skillsInput = findViewById(R.id.skills_input);
         profileImageView = findViewById(R.id.profile_image_view);
         selectProfilePhotoButton = findViewById(R.id.select_profile_photo_button);
+        addSkillButton = findViewById(R.id.add_skill_button);
         btnSaveProfile = findViewById(R.id.btn_save_profile);
+        skillsRecyclerView = findViewById(R.id.skills_recycler_view);
+
+        // Initialize certification views
+        certificationsInput = findViewById(R.id.certifications_input);
+        addCertificationButton = findViewById(R.id.add_certification_button);
+        certificationsRecyclerView = findViewById(R.id.certifications_recycler_view);
+
+// Initialize RecyclerView for certifications
+        certificationsAdapter = new CertificationsAdapter(certificationsList, this::removeCertification);
+        certificationsRecyclerView.setAdapter(certificationsAdapter);
+        certificationsRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+
+
+        // Initialize RecyclerView
+        skillsAdapter = new SkillsAdapter(skillsList, this::removeSkill);
+        skillsRecyclerView.setAdapter(skillsAdapter);
+        skillsRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Saving...");
 
-        // Load existing user data from Firebase
+        // Load user profile
         loadUserProfile();
 
-        // Set up profile photo selection
-        selectProfilePhotoButton.setOnClickListener(v -> selectProfilePhoto());
+        // Add skill button logic
+        addSkillButton.setOnClickListener(v -> {
+            String skill = skillsInput.getText().toString().trim();
+            if (!TextUtils.isEmpty(skill)) {
+                skillsList.add(skill);
+                skillsAdapter.notifyDataSetChanged();
+                skillsInput.setText("");
+            } else {
+                Toast.makeText(this, "Enter a skill", Toast.LENGTH_SHORT).show();
+            }
+        });
+        addCertificationButton.setOnClickListener(v -> {
+            String certification = certificationsInput.getText().toString().trim();
+            if (!TextUtils.isEmpty(certification)) {
+                certificationsList.add(certification);
+                certificationsAdapter.notifyDataSetChanged();
+                certificationsInput.setText("");
+            } else {
+                Toast.makeText(this, "Enter a certification", Toast.LENGTH_SHORT).show();
+            }
+        });
 
-        // Set up save changes button
+        // Save profile changes
         btnSaveProfile.setOnClickListener(v -> saveUserProfile());
     }
 
@@ -81,19 +134,29 @@ public class EditprofileActivity extends AppCompatActivity {
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                // Load existing data if present, otherwise set as blank
                 String name = snapshot.child("name").getValue(String.class);
-                String skills = snapshot.child("skills").getValue(String.class);
-                String phone = snapshot.child("phone").getValue(String.class);
                 String profileImageUrl = snapshot.child("imageUrl").getValue(String.class);
+                String skills = snapshot.child("skills").getValue(String.class);
 
-                // Display the data in the text fields
                 editName.setText(name != null ? name : "");
-                editSkills.setText(skills != null ? skills : "");
-                editPhone.setText(phone != null ? phone : "");
+                String certifications = snapshot.child("certifications").getValue(String.class);
 
-                // Load profile image using Glide
-                if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+// Populate certifications list
+                if (certifications != null) {
+                    certificationsList.clear();
+                    certificationsList.addAll(Arrays.asList(certifications.split(",")));
+                    certificationsAdapter.notifyDataSetChanged();
+                }
+
+
+                // Populate skills list
+                if (skills != null) {
+                    skillsList.clear();
+                    skillsList.addAll(Arrays.asList(skills.split(",")));
+                    skillsAdapter.notifyDataSetChanged();
+                }
+
+                if (profileImageUrl != null) {
                     Glide.with(EditprofileActivity.this).load(profileImageUrl).into(profileImageView);
                 }
             }
@@ -105,70 +168,45 @@ public class EditprofileActivity extends AppCompatActivity {
         });
     }
 
-    private void selectProfilePhoto() {
-        // Open image selector
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        startActivityForResult(intent, 1);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            imageUri = data.getData();
-            profileImageView.setImageURI(imageUri);
-        }
-    }
-
     private void saveUserProfile() {
-        // Check that all fields are filled out
         String name = editName.getText().toString().trim();
-        String skills = editSkills.getText().toString().trim();
-        String phone = editPhone.getText().toString().trim();
-
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(skills) || TextUtils.isEmpty(phone) ) {
-            Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show();
+        String skills = String.join(",", skillsList);
+        if (TextUtils.isEmpty(name) ) {
+            Toast.makeText(this, "Name  is required", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        String certifications = String.join(",", certificationsList);
+        databaseReference.child("certifications").setValue(certifications).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Toast.makeText(EditprofileActivity.this, "Profile updated", Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                Toast.makeText(EditprofileActivity.this, "Failed to save profile", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         progressDialog.show();
 
-        if (imageUri != null) {
-            // Save profile image to Firebase Storage
-            storageReference.putFile(imageUri).addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    // Get the download URL and save other user data
-                    storageReference.getDownloadUrl().addOnCompleteListener(task1 -> {
-                        if (task1.isSuccessful()) {
-                            String profileImageUrl = task1.getResult().toString();
-                            saveUserData(name, skills, phone, profileImageUrl);
-                        } else {
-                            progressDialog.dismiss();
-                            Toast.makeText(EditprofileActivity.this, "Failed to get image URL", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } else {
-                    progressDialog.dismiss();
-                    Toast.makeText(EditprofileActivity.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
-                }
-            });
-        } else {
-            saveUserData(name, skills, phone, null);
-        }
-    }
-
-    private void saveUserData(String name, String skills, String phone, String profileImageUrl) {
-        // Create a HashMap to save user details
         databaseReference.child("name").setValue(name);
-        databaseReference.child("skills").setValue(skills);
-        databaseReference.child("phone").setValue(phone);
-        if (profileImageUrl != null) {
-            databaseReference.child("imageUrl").setValue(profileImageUrl);
-        }
-
-        progressDialog.dismiss();
-        Toast.makeText(EditprofileActivity.this, "Profile updated successfully", Toast.LENGTH_SHORT).show();
-        finish();
+        databaseReference.child("skills").setValue(skills).addOnCompleteListener(task -> {
+            progressDialog.dismiss();
+            if (task.isSuccessful()) {
+                Toast.makeText(EditprofileActivity.this, "Profile updated", Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                Toast.makeText(EditprofileActivity.this, "Failed to save profile", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
+    private void removeSkill(String skill) {
+        skillsList.remove(skill);
+        skillsAdapter.notifyDataSetChanged();
+    }
+    private void removeCertification(String certification) {
+        certificationsList.remove(certification);
+        certificationsAdapter.notifyDataSetChanged();
+    }
+
 }
