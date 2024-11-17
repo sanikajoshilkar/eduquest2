@@ -36,6 +36,8 @@ public class DashboardFragment extends Fragment {
     private ArrayAdapter<String> companyAdapter;
     private ArrayList<String> companyNames;
     private CompanyAdapter recyclerAdapter;
+    private AutoCompleteTextView autoCompleteSearch;
+    private ArrayAdapter<String> autoCompleteAdapter;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -52,6 +54,14 @@ public class DashboardFragment extends Fragment {
         recyclerAdapter = new CompanyAdapter(companyNames, requireContext()); // Pass context as the second parameter
         companyRecyclerView.setAdapter(recyclerAdapter);
 
+        // Initialize AutoCompleteTextView
+        autoCompleteSearch = root.findViewById(R.id.autoCompleteSearch);
+        autoCompleteAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
+        autoCompleteSearch.setAdapter(autoCompleteAdapter);
+
+// Add listener to handle search
+        autoCompleteSearch.setOnItemClickListener((parent, view, position, id) -> filterCompanies(autoCompleteAdapter.getItem(position)));
+
 
         // Floating Action Button to open dialog
         root.findViewById(R.id.addCompanyFab).setOnClickListener(v -> openAddCompanyDialog());
@@ -67,10 +77,23 @@ public class DashboardFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 companyNames.clear();
+                ArrayList<String> suggestions = new ArrayList<>();
+
                 for (DataSnapshot companySnapshot : snapshot.getChildren()) {
-                    companyNames.add(companySnapshot.getKey());
+                    String companyName = companySnapshot.getKey();
+                    if (companyName != null) {
+                        companyNames.add(companyName);
+                        suggestions.add(companyName);
+                    }
                 }
+
+                // Update RecyclerView
                 recyclerAdapter.notifyDataSetChanged();
+
+                // Update AutoCompleteTextView suggestions
+                autoCompleteAdapter.clear();
+                autoCompleteAdapter.addAll(suggestions);
+                autoCompleteAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -154,6 +177,8 @@ public class DashboardFragment extends Fragment {
         });
     }
 
+
+
     private void saveCompanyQuestions(String company, ArrayList<String> questions) {
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         String questionsString = TextUtils.join("\n", questions);
@@ -169,5 +194,18 @@ public class DashboardFragment extends Fragment {
                 Toast.makeText(requireContext(), "Failed to add questions.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+    private void filterCompanies(String query) {
+        if (TextUtils.isEmpty(query)) {
+            recyclerAdapter.updateData(companyNames);
+        } else {
+            ArrayList<String> filteredList = new ArrayList<>();
+            for (String companyName : companyNames) {
+                if (companyName.toLowerCase().contains(query.toLowerCase())) {
+                    filteredList.add(companyName);
+                }
+            }
+            recyclerAdapter.updateData(filteredList);
+        }
     }
 }

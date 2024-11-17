@@ -12,11 +12,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.tkiet.eduquest.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.ViewHolder> {
 
-    private final List<String> companyList;
+    private List<String> companyList;
     private final Context context;
 
     public CompanyAdapter(List<String> companyList, Context context) {
@@ -29,6 +30,11 @@ public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.ViewHold
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_company, parent, false);
         return new ViewHolder(view);
+    }
+
+    public void updateData(ArrayList<String> newCompanyList) {
+        this.companyList = newCompanyList;
+        notifyDataSetChanged();
     }
 
     @Override
