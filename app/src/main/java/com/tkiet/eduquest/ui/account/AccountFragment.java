@@ -32,7 +32,7 @@ public class AccountFragment extends Fragment {
     private DatabaseReference databaseReference, likesReference;
     private ImageView profileImageView, likeIcon;
     private TextView profileName, likeCount;
-    private CardView editProfile, myVideos, addVideo, signOut;
+    private CardView editProfile, myVideos, addVideo, signOut,interviewquesitons;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -65,7 +65,7 @@ public class AccountFragment extends Fragment {
         myVideos = view.findViewById(R.id.my_videos);
         addVideo = view.findViewById(R.id.add_video);
         signOut = view.findViewById(R.id.account_sign_out);
-
+        interviewquesitons=view.findViewById(R.id.myinterviewquestions);
         // Set up button click listeners
         setButtonListeners();
     }
@@ -138,7 +138,9 @@ public class AccountFragment extends Fragment {
                 intent = new Intent(getActivity(), MyvideosActivity.class);
             } else if (v.getId() == R.id.add_video) {
                 intent = new Intent(getActivity(), AddVideoActivity.class);
-            } else if (v.getId() == R.id.account_sign_out) {
+            }else if (v.getId()==R.id.myinterviewquestions) {
+                intent = new Intent(getActivity(), MyInterviewQuestionsActivity.class);
+            }else if (v.getId() == R.id.account_sign_out) {
                 auth.signOut();
                 requireActivity().getSharedPreferences("LoginPrefs", getContext().MODE_PRIVATE)
                         .edit()
@@ -160,5 +162,6 @@ public class AccountFragment extends Fragment {
         myVideos.setOnClickListener(listener);
         addVideo.setOnClickListener(listener);
         signOut.setOnClickListener(listener);
+        interviewquesitons.setOnClickListener(listener);
     }
 }

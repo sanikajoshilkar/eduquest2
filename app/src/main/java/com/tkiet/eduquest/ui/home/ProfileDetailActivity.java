@@ -3,6 +3,7 @@ package com.tkiet.eduquest.ui.home;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,6 +41,8 @@ public class ProfileDetailActivity extends AppCompatActivity {
     private DatabaseReference userLikesRef;
     private FirebaseUser currentUser;
     private boolean isLiked;
+    private LinearLayout skillsContainer;
+    private LinearLayout certificationsContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +53,8 @@ public class ProfileDetailActivity extends AppCompatActivity {
         nameTextView = findViewById(R.id.nameTextView);
         skillsTextView = findViewById(R.id.skillsTextView);
         videosRecyclerView = findViewById(R.id.videosRecyclerView);
-
+        skillsContainer = findViewById(R.id.skillsContainer);
+        certificationsContainer = findViewById(R.id.certificationsContainer);
         // Get user ID from intent
         userId = getIntent().getStringExtra("userId");
         if (userId == null) {
@@ -86,10 +90,27 @@ public class ProfileDetailActivity extends AppCompatActivity {
                     String name = snapshot.child("name").getValue(String.class);
                     String phone = snapshot.child("phone").getValue(String.class);
                     String skills = snapshot.child("skills").getValue(String.class);
+                    String certifications = snapshot.child("certifications").getValue(String.class);
 
+                    // Set profile image
                     Glide.with(ProfileDetailActivity.this).load(imageUrl).into(profileImageView);
                     nameTextView.setText(name);
-                    skillsTextView.setText(skills);
+
+                    // Dynamically create skill boxes
+                    if (skills != null) {
+                        String[] skillArray = skills.split(",");
+                        for (String skill : skillArray) {
+                            addSkillBox(skill.trim());
+                        }
+                    }
+
+                    // Dynamically create certification boxes
+                    if (certifications != null) {
+                        String[] certificationArray = certifications.split(",");
+                        for (String certification : certificationArray) {
+                            addCertificationBox(certification.trim());
+                        }
+                    }
                 } else {
                     Toast.makeText(ProfileDetailActivity.this, "User not found", Toast.LENGTH_SHORT).show();
                     finish();
@@ -102,6 +123,49 @@ public class ProfileDetailActivity extends AppCompatActivity {
             }
         });
     }
+
+    // Helper method to add skill boxes
+    private void addSkillBox(String skill) {
+        TextView skillBox = new TextView(this);
+        skillBox.setText(skill);
+        skillBox.setTextSize(16);
+        skillBox.setTextColor(getResources().getColor(R.color.black));
+        skillBox.setPadding(16, 8, 16, 8);
+        skillBox.setBackgroundResource(R.drawable.skill_box_background); // Define rounded corner drawable for styling
+
+        // Add layout params with margins
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(8, 8, 8, 8); // Add margins to create space between boxes
+        skillBox.setLayoutParams(params);
+
+        skillsContainer.addView(skillBox); // Add to skills container
+    }
+
+
+    // Helper method to add certification boxes
+    private void addCertificationBox(String certification) {
+        TextView certBox = new TextView(this);
+        certBox.setText(certification);
+        certBox.setTextSize(16);
+        certBox.setTextColor(getResources().getColor(R.color.black));
+        certBox.setPadding(16, 8, 16, 8);
+        certBox.setBackgroundResource(R.drawable.certification_box_background); // Define rounded corner drawable for styling
+
+        // Add layout params with margins
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(8, 8, 8, 8); // Add margins to create space between boxes
+        certBox.setLayoutParams(params);
+
+        certificationsContainer.addView(certBox); // Add to certifications container
+    }
+
+
 
     private void loadUploadedVideos() {
         uploadedVideos = new ArrayList<>();

@@ -67,7 +67,15 @@ public class EditprofileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editprofile);
+        // Initialize toolbar and set title
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Enable the navigation icon
 
+        // Handle navigation icon (logout button) click
+        toolbar.setNavigationOnClickListener(v -> {
+            finish(); // Go back to the previous activity
+        });
         // Firebase setup
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(currentUser.getUid());
