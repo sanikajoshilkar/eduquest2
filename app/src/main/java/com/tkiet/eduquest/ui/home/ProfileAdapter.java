@@ -52,7 +52,7 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ProfileV
         // Handle the profile image using Glide
         Glide.with(context)
                 .load(profile.getImageUrl())
-                .placeholder(R.drawable.account_manage)
+                .placeholder(R.drawable.loading)
                 .into(holder.imageViewProfile);
 
         // Fetch and display like count from Firebase

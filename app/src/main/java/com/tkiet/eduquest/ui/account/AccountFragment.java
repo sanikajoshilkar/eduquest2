@@ -32,8 +32,8 @@ public class AccountFragment extends Fragment {
     private DatabaseReference databaseReference, likesReference;
     private ImageView profileImageView, likeIcon;
     private TextView profileName, likeCount;
-    private CardView editProfile, myVideos, addVideo, signOut,interviewquesitons;
-
+    private CardView editProfile, myVideos, addVideo, signOut,interviewquesitons,adminactivity;
+    CardView adminOption;
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_notifications, container, false);
@@ -55,6 +55,7 @@ public class AccountFragment extends Fragment {
             // Initialize Likes reference
             likesReference = FirebaseDatabase.getInstance().getReference("Likes").child(userId);
             loadLikeCount(userId);  // Load the like count for the current user
+         //   checkIfAdmin(userId);
         }
 
         // Initialize views
@@ -66,8 +67,16 @@ public class AccountFragment extends Fragment {
         addVideo = view.findViewById(R.id.add_video);
         signOut = view.findViewById(R.id.account_sign_out);
         interviewquesitons=view.findViewById(R.id.myinterviewquestions);
+       adminOption = view.findViewById(R.id.admin_activity); // Initialize admin option
+        adminactivity=view.findViewById(R.id.admin_activity);
         // Set up button click listeners
         setButtonListeners();
+        adminOption.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), AdminActivity.class);
+            startActivity(intent);
+        });
+
+
     }
 
     private void loadUserProfile() {
@@ -133,7 +142,7 @@ public class AccountFragment extends Fragment {
 
             // Use if-else statements instead of switch for view IDs
             if (v.getId() == R.id.account_profile_tv) {
-                intent = new Intent(getActivity(), EditprofileActivity.class);
+                intent = new Intent(getActivity(), AdminActivity.class);
             } else if (v.getId() == R.id.my_videos) {
                 intent = new Intent(getActivity(), MyvideosActivity.class);
             } else if (v.getId() == R.id.add_video) {
@@ -149,19 +158,51 @@ public class AccountFragment extends Fragment {
                 Toast.makeText(getContext(), "Signed Out", Toast.LENGTH_SHORT).show();
                 intent = new Intent(getActivity(), LoginActivity.class);
                 requireActivity().finish();
+            }else if(v.getId()==R.id.admin_activity){
+                intent = new Intent(getActivity(), AdminActivity.class);
             }
-
             // Start the activity if intent is set
             if (intent != null) {
                 startActivity(intent);
             }
         };
-
+        adminactivity.setOnClickListener(listener);
+        adminOption.setOnClickListener(listener);
         // Assign the listener to each card view
         editProfile.setOnClickListener(listener);
         myVideos.setOnClickListener(listener);
         addVideo.setOnClickListener(listener);
         signOut.setOnClickListener(listener);
         interviewquesitons.setOnClickListener(listener);
+
     }
+
+    private void checkIfAdmin(String userId) {
+        DatabaseReference adminReference = FirebaseDatabase.getInstance().getReference("Admin");
+
+        adminReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                if (snapshot.hasChild(userId)) {
+                    // User is an admin, make the admin_tv visible
+                    adminOption.setVisibility(View.VISIBLE);
+                    adminOption.setOnClickListener(v -> {
+                        Log.d("AccountFragment", "Admin Card Clicked");
+                        Intent intent = new Intent(getActivity(), AdminActivity.class);
+                        startActivity(intent);
+                    });
+                } else {
+                    // User is not an admin, hide the admin_tv
+                    adminOption.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getContext(), "Failed to check admin status", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 }

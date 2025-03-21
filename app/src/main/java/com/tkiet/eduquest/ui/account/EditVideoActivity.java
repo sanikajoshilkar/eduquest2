@@ -1,176 +1,223 @@
-package com.tkiet.eduquest.ui.account;
+    package com.tkiet.eduquest.ui.account;
+    
+    import android.content.Intent;
+    import android.net.Uri;
+    import android.os.Bundle;
+    import android.view.View;
+    import android.widget.Button;
+    import android.widget.EditText;
+    import android.widget.ImageView;
+    import android.widget.Toast;
+    import android.widget.VideoView;
+    import android.widget.MediaController;
+    
+    import androidx.annotation.Nullable;
+    import androidx.appcompat.app.AlertDialog;
+    import androidx.appcompat.app.AppCompatActivity;
+    
+    import com.bumptech.glide.Glide;
+    import com.google.firebase.auth.FirebaseAuth;
+    import com.google.firebase.database.DataSnapshot;
+    import com.google.firebase.database.DatabaseError;
+    import com.google.firebase.database.DatabaseReference;
+    import com.google.firebase.database.FirebaseDatabase;
+    import com.google.firebase.database.ValueEventListener;
+    import com.tkiet.eduquest.R;
+    
+    import com.google.firebase.storage.FirebaseStorage;
+    import com.google.firebase.storage.StorageReference;
+    
+    public class EditVideoActivity extends AppCompatActivity {
+    
+        private VideoView videoView;
+        private EditText titleEditText, descriptionEditText, tagsEditText;
+        private ImageView thumbnailImageView;
+        private Button saveButton, changeThumbnailButton;
+        private String videoId;
+        private DatabaseReference databaseReference;
+        private StorageReference storageReference;
+        private Uri newThumbnailUri;
+        private String videoUrl;
+    
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_edit_video);
+            androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+            setSupportActionBar(toolbar);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Enable the navigation icon
 
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Toast;
-import android.widget.VideoView;
-import android.widget.MediaController;
-
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.bumptech.glide.Glide;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.tkiet.eduquest.R;
-
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-
-public class EditVideoActivity extends AppCompatActivity {
-
-    private VideoView videoView;
-    private EditText titleEditText, descriptionEditText, tagsEditText;
-    private ImageView thumbnailImageView;
-    private Button saveButton, changeThumbnailButton;
-    private String videoId;
-    private DatabaseReference databaseReference;
-    private StorageReference storageReference;
-    private Uri newThumbnailUri;
-    private String videoUrl;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_video);
-
-        // Initialize views
-        videoView = findViewById(R.id.videoView);
-        titleEditText = findViewById(R.id.titleEditText);
-        descriptionEditText = findViewById(R.id.descriptionEditText);
-        tagsEditText = findViewById(R.id.tagsEditText);
-        thumbnailImageView = findViewById(R.id.thumbnailImageView);
-        saveButton = findViewById(R.id.saveButton);
-        changeThumbnailButton = findViewById(R.id.changeThumbnailButton);
-
-        // Get video ID from Intent
-        videoId = getIntent().getStringExtra("videoId");
-
-        if (videoId != null) {
-            databaseReference = FirebaseDatabase.getInstance().getReference("videos").child(videoId);
-            storageReference = FirebaseStorage.getInstance().getReference();
-            loadVideoData();
-        } else {
-            Toast.makeText(this, "Video ID is missing", Toast.LENGTH_SHORT).show();
-        }
-
-        // MediaController to add play/pause, seekbar, and volume controls
-        MediaController mediaController = new MediaController(this);
-        mediaController.setAnchorView(videoView);
-        videoView.setMediaController(mediaController); // Attach MediaController to VideoView
-
-        // Change Thumbnail Button Logic
-        changeThumbnailButton.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            startActivityForResult(intent, 1);
-        });
-
-        // Save Button Logic to save the data
-        saveButton.setOnClickListener(v -> {
-            String title = titleEditText.getText().toString();
-            String description = descriptionEditText.getText().toString();
-            String tags = tagsEditText.getText().toString();
-
-            if (!title.isEmpty() && !description.isEmpty()) {
-                saveVideoData(title, description, tags);
+            // Handle navigation icon (logout button) click
+            toolbar.setNavigationOnClickListener(v -> {
+                finish(); // Go back to the previous activity
+            });
+            // Initialize views
+            videoView = findViewById(R.id.videoView);
+            titleEditText = findViewById(R.id.titleEditText);
+            descriptionEditText = findViewById(R.id.descriptionEditText);
+            tagsEditText = findViewById(R.id.tagsEditText);
+            thumbnailImageView = findViewById(R.id.thumbnailImageView);
+            saveButton = findViewById(R.id.saveButton);
+            changeThumbnailButton = findViewById(R.id.changeThumbnailButton);
+            Button deleteButton = findViewById(R.id.deleteButton);
+    
+            deleteButton.setOnClickListener(v -> {
+                deleteVideo();
+            });
+    
+            // Get video ID from Intent
+            videoId = getIntent().getStringExtra("videoId");
+    
+            if (videoId != null) {
+                databaseReference = FirebaseDatabase.getInstance().getReference("videos").child(videoId);
+                storageReference = FirebaseStorage.getInstance().getReference();
+                loadVideoData();
             } else {
-                Toast.makeText(this, "Title and Description cannot be empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Video ID is missing", Toast.LENGTH_SHORT).show();
             }
-        });
-    }
-
-    // Method to load video data
-    private void loadVideoData() {
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    VideoModel video = dataSnapshot.getValue(VideoModel.class);
-
-                    if (video != null) {
-                        // Set video URL to the VideoView
-                        videoUrl = video.getVideoUrl();  // Assign the video URL to the videoUrl variable
-                        videoView.setVideoPath(videoUrl); // Set the video URL for VideoView
-
-                        // Start playing the video
-                        videoView.start();
-
-                        // Set other fields
-                        titleEditText.setText(video.getTitle());
-                        descriptionEditText.setText(video.getDescription());
-                        tagsEditText.setText(video.getTags());
-
-                        // Load the thumbnail using Glide
-                        Glide.with(EditVideoActivity.this)
-                                .load(video.getThumbnailUrl())
-                                .into(thumbnailImageView);
-                    }
+    
+            // MediaController to add play/pause, seekbar, and volume controls
+            MediaController mediaController = new MediaController(this);
+            mediaController.setAnchorView(videoView);
+            videoView.setMediaController(mediaController); // Attach MediaController to VideoView
+    
+            // Change Thumbnail Button Logic
+            changeThumbnailButton.setOnClickListener(v -> {
+                Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent, 1);
+            });
+    
+            // Save Button Logic to save the data
+            saveButton.setOnClickListener(v -> {
+                String title = titleEditText.getText().toString();
+                String description = descriptionEditText.getText().toString();
+                String tags = tagsEditText.getText().toString();
+    
+                if (!title.isEmpty() && !description.isEmpty()) {
+                    saveVideoData(title, description, tags);
                 } else {
-                    Toast.makeText(EditVideoActivity.this, "Video data not found", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Title and Description cannot be empty", Toast.LENGTH_SHORT).show();
                 }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(EditVideoActivity.this, "Failed to load video data", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    // Method to save updated video data
-    private void saveVideoData(String title, String description, String tags) {
-        // Get the current user's ID
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        // Create a new VideoModel object and set the fields
-        VideoModel video = new VideoModel(title, description, tags, videoUrl, currentUserId);
-
-        // If a new thumbnail is selected, upload it to Firebase Storage
-        if (newThumbnailUri != null) {
-            String thumbnailPath = "thumbnails/" + videoId + ".jpg";
-            storageReference.child(thumbnailPath).putFile(newThumbnailUri)
-                    .addOnSuccessListener(taskSnapshot -> {
-                        storageReference.child(thumbnailPath).getDownloadUrl()
-                                .addOnSuccessListener(uri -> {
-                                    video.setThumbnailUrl(uri.toString()); // Set the new thumbnail URL
-                                    updateVideoInDatabase(video); // Update the video in Firebase
-                                });
-                    });
-        } else {
-            updateVideoInDatabase(video); // If no new thumbnail, directly update video
+            });
         }
-    }
-
-    private void updateVideoInDatabase(VideoModel video) {
-        // Update the video in the Firebase Realtime Database
-        databaseReference.setValue(video).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                Toast.makeText(EditVideoActivity.this, "Video updated successfully", Toast.LENGTH_SHORT).show();
-                finish(); // Close the activity after success
+    
+        // Method to load video data
+        private void loadVideoData() {
+            databaseReference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        VideoModel video = dataSnapshot.getValue(VideoModel.class);
+    
+                        if (video != null) {
+                            // Set video URL to the VideoView
+                            videoUrl = video.getVideoUrl();  // Assign the video URL to the videoUrl variable
+                            videoView.setVideoPath(videoUrl); // Set the video URL for VideoView
+    
+                            // Start playing the video
+                            videoView.start();
+    
+                            // Set other fields
+                            titleEditText.setText(video.getTitle());
+                            descriptionEditText.setText(video.getDescription());
+                            tagsEditText.setText(video.getTags());
+    
+                            // Load the thumbnail using Glide
+                            Glide.with(EditVideoActivity.this)
+                                    .load(video.getThumbnailUrl())
+                                    .into(thumbnailImageView);
+                        }
+                    } else {
+                        Toast.makeText(EditVideoActivity.this, "Video data not found", Toast.LENGTH_SHORT).show();
+                    }
+                }
+    
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Toast.makeText(EditVideoActivity.this, "Failed to load video data", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    
+        // Method to save updated video data
+        private void saveVideoData(String title, String description, String tags) {
+            // Get the current user's ID
+            String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    
+            // Create a new VideoModel object and set the fields
+            VideoModel video = new VideoModel(title, description, tags, videoUrl, currentUserId);
+    
+            // If a new thumbnail is selected, upload it to Firebase Storage
+            if (newThumbnailUri != null) {
+                String thumbnailPath = "thumbnails/" + videoId + ".jpg";
+                storageReference.child(thumbnailPath).putFile(newThumbnailUri)
+                        .addOnSuccessListener(taskSnapshot -> {
+                            storageReference.child(thumbnailPath).getDownloadUrl()
+                                    .addOnSuccessListener(uri -> {
+                                        video.setThumbnailUrl(uri.toString()); // Set the new thumbnail URL
+                                        updateVideoInDatabase(video); // Update the video in Firebase
+                                    });
+                        });
             } else {
-                Toast.makeText(EditVideoActivity.this, "Failed to update video", Toast.LENGTH_SHORT).show();
+                updateVideoInDatabase(video); // If no new thumbnail, directly update video
             }
-        });
-    }
-
-    // Handle result from image picker (Change Thumbnail)
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == RESULT_OK && requestCode == 1) {
-            Uri selectedImage = data.getData();
-            thumbnailImageView.setImageURI(selectedImage);
-            newThumbnailUri = selectedImage;
         }
+    
+        private void updateVideoInDatabase(VideoModel video) {
+            // Update the video in the Firebase Realtime Database
+            databaseReference.setValue(video).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(EditVideoActivity.this, "Video updated successfully", Toast.LENGTH_SHORT).show();
+                    finish(); // Close the activity after success
+                } else {
+                    Toast.makeText(EditVideoActivity.this, "Failed to update video", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    
+        // Handle result from image picker (Change Thumbnail)
+        @Override
+        protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+            super.onActivityResult(requestCode, resultCode, data);
+    
+            if (resultCode == RESULT_OK && requestCode == 1) {
+                Uri selectedImage = data.getData();
+                thumbnailImageView.setImageURI(selectedImage);
+                newThumbnailUri = selectedImage;
+            }
+        }
+        private void deleteVideo() {
+            // Confirm with the user before deletion
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete Video")
+                    .setMessage("Are you sure you want to delete this video?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        // Delete the video from Firebase Storage
+                        StorageReference videoRef = FirebaseStorage.getInstance().getReference("videos/" + videoId + ".mp4");
+                        videoRef.delete().addOnSuccessListener(aVoid -> {
+                            // After deleting the video, delete the thumbnail
+                            StorageReference thumbnailRef = FirebaseStorage.getInstance().getReference("videos/" + videoId + "_thumbnail.jpg");
+                            thumbnailRef.delete().addOnSuccessListener(aVoid1 -> {
+                                // After deleting both video and thumbnail, remove from Realtime Database
+                                databaseReference.removeValue().addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        Toast.makeText(EditVideoActivity.this, "Video deleted successfully", Toast.LENGTH_SHORT).show();
+                                        finish(); // Close the activity after deletion
+                                    } else {
+                                        Toast.makeText(EditVideoActivity.this, "Failed to delete video from database", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }).addOnFailureListener(e -> {
+                                // Handle error if the thumbnail deletion fails
+                                Toast.makeText(EditVideoActivity.this, "Failed to delete thumbnail", Toast.LENGTH_SHORT).show();
+                            });
+                        }).addOnFailureListener(e -> {
+                            Toast.makeText(EditVideoActivity.this, "Failed to delete video", Toast.LENGTH_SHORT).show();
+                        });
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+        }
+
+
     }
-}

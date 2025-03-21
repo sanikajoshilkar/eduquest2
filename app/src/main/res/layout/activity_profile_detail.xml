@@ -82,19 +82,16 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_gravity="center" />
-    <LinearLayout
-        android:id="@+id/skillsContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="8dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:gravity="center"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="8dp"
-        android:padding="4dp"
-        android:background="#D6D4D4" />
+        <com.google.android.flexbox.FlexboxLayout
+            android:id="@+id/skillsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:padding="4dp"
+            app:flexWrap="wrap"
+            app:justifyContent="center" />
 
     <TextView
         android:id="@+id/certificationsTextView"
@@ -105,19 +102,16 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_gravity="center" />
-    <LinearLayout
-        android:id="@+id/certificationsContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:gravity="center"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="8dp"
-        android:padding="4dp"
-        android:background="#D6D4D4" />
+        <com.google.android.flexbox.FlexboxLayout
+            android:id="@+id/certificationsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:padding="4dp"
+            app:flexWrap="wrap"
+            app:justifyContent="center" />
 
     <TextView
         android:layout_width="wrap_content"

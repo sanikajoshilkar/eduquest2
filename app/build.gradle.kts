@@ -11,8 +11,8 @@ android {
         applicationId = "com.tkiet.eduquest"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -59,6 +59,7 @@ dependencies {
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
     implementation("com.arthenica:mobile-ffmpeg-full:4.4")
     implementation("com.squareup.picasso:picasso:2.71828")
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
 
 
 

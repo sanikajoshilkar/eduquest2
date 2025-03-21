@@ -67,6 +67,31 @@
         android:gravity="center" />
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/admin_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp"
+        android:clickable="true"
+        android:focusable="true">
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:padding="16dp"
+            android:text="Admin"
+            android:drawablePadding="16dp"
+            app:drawableTint="@color/blue_accent_300"
+            android:textSize="16sp"
+            app:drawableStartCompat="@drawable/baseline_admin_panel_settings_24"
+            android:textStyle="bold" />
+    </androidx.cardview.widget.CardView>
+
+
+    <androidx.cardview.widget.CardView
         android:id="@+id/account_profile_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -75,6 +100,7 @@
         app:cardElevation="4dp"
         android:clickable="true"
         android:focusable="true">
+
 
         <TextView
             android:layout_width="match_parent"

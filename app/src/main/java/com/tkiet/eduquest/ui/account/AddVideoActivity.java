@@ -47,6 +47,15 @@ public class AddVideoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_video);
 
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Enable the navigation icon
+
+        // Handle navigation icon (logout button) click
+        toolbar.setNavigationOnClickListener(v -> {
+            finish(); // Go back to the previous activity
+        });
+
         videoPreviewImage = findViewById(R.id.videoPreviewImage);
         auth = FirebaseAuth.getInstance();
         videoStorageRef = FirebaseStorage.getInstance().getReference("videos");
@@ -146,10 +155,11 @@ public class AddVideoActivity extends AppCompatActivity {
                         videoData.put("tags", ((TextInputEditText) findViewById(R.id.tags)).getText().toString().trim());
                         videoData.put("videoUrl", videoUrl.toString());
                         videoData.put("thumbnailUrl", thumbnailUrl.toString());
-
+                        videoData.put("isVerified" , false);
                         databaseRef.child(videoId).setValue(videoData).addOnSuccessListener(aVoid -> {
                             Toast.makeText(AddVideoActivity.this, "Upload done", Toast.LENGTH_SHORT).show();
                             progressDialog.dismiss();
+                            finish();
                         }).addOnFailureListener(e -> {
                             Toast.makeText(AddVideoActivity.this, "Failed to save data", Toast.LENGTH_SHORT).show();
                             progressDialog.dismiss();

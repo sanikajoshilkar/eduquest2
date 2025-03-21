@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.flexbox.FlexboxLayout;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -41,8 +42,8 @@ public class ProfileDetailActivity extends AppCompatActivity {
     private DatabaseReference userLikesRef;
     private FirebaseUser currentUser;
     private boolean isLiked;
-    private LinearLayout skillsContainer;
-    private LinearLayout certificationsContainer;
+    private FlexboxLayout skillsContainer;
+    private FlexboxLayout certificationsContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +89,6 @@ public class ProfileDetailActivity extends AppCompatActivity {
                 if (snapshot.exists()) {
                     String imageUrl = snapshot.child("imageUrl").getValue(String.class);
                     String name = snapshot.child("name").getValue(String.class);
-                    String phone = snapshot.child("phone").getValue(String.class);
                     String skills = snapshot.child("skills").getValue(String.class);
                     String certifications = snapshot.child("certifications").getValue(String.class);
 
@@ -96,26 +96,31 @@ public class ProfileDetailActivity extends AppCompatActivity {
                     Glide.with(ProfileDetailActivity.this).load(imageUrl).into(profileImageView);
                     nameTextView.setText(name);
 
-                    // Dynamically create skill boxes
-                    if (skills != null) {
+                    // Dynamically create skill boxes or show 'Skills not added'
+                    if (skills != null && !skills.trim().isEmpty()) {
                         String[] skillArray = skills.split(",");
                         for (String skill : skillArray) {
                             addSkillBox(skill.trim());
                         }
+                    } else {
+                        addSkillBox("Skills not added");
                     }
 
-                    // Dynamically create certification boxes
-                    if (certifications != null) {
+                    // Dynamically create certification boxes or show 'Certifications not added'
+                    if (certifications != null && !certifications.trim().isEmpty()) {
                         String[] certificationArray = certifications.split(",");
                         for (String certification : certificationArray) {
                             addCertificationBox(certification.trim());
                         }
+                    } else {
+                        addCertificationBox("Certifications not added");
                     }
                 } else {
                     Toast.makeText(ProfileDetailActivity.this, "User not found", Toast.LENGTH_SHORT).show();
                     finish();
                 }
             }
+
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {

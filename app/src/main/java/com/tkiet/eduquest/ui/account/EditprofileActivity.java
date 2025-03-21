@@ -89,7 +89,7 @@ public class EditprofileActivity extends AppCompatActivity {
         addSkillButton = findViewById(R.id.add_skill_button);
         btnSaveProfile = findViewById(R.id.btn_save_profile);
         skillsRecyclerView = findViewById(R.id.skills_recycler_view);
-
+        selectProfilePhotoButton.setOnClickListener(v -> selectProfilePhoto());
         // Initialize certification views
         certificationsInput = findViewById(R.id.certifications_input);
         addCertificationButton = findViewById(R.id.add_certification_button);
@@ -178,35 +178,87 @@ public class EditprofileActivity extends AppCompatActivity {
 
     private void saveUserProfile() {
         String name = editName.getText().toString().trim();
-        String skills = String.join(",", skillsList);
-        if (TextUtils.isEmpty(name) ) {
-            Toast.makeText(this, "Name  is required", Toast.LENGTH_SHORT).show();
+
+        if (TextUtils.isEmpty(name)) {
+            Toast.makeText(this, "Name is required", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String certifications = String.join(",", certificationsList);
-        databaseReference.child("certifications").setValue(certifications).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                Toast.makeText(EditprofileActivity.this, "Profile updated", Toast.LENGTH_SHORT).show();
-                finish();
-            } else {
-                Toast.makeText(EditprofileActivity.this, "Failed to save profile", Toast.LENGTH_SHORT).show();
-            }
-        });
-
         progressDialog.show();
 
+        // Save the name
         databaseReference.child("name").setValue(name);
-        databaseReference.child("skills").setValue(skills).addOnCompleteListener(task -> {
+
+        // Check and save skills
+        if (!skillsList.isEmpty()) {
+            String skills = String.join(",", skillsList);
+            databaseReference.child("skills").setValue(skills);
+        } else {
+            databaseReference.child("skills").removeValue();  // Remove the field if empty
+        }
+
+        // Check and save certifications
+        if (!certificationsList.isEmpty()) {
+            String certifications = String.join(",", certificationsList);
+            databaseReference.child("certifications").setValue(certifications);
+        } else {
+            databaseReference.child("certifications").removeValue();  // Remove the field if empty
+        }
+
+        // Upload the profile image if it has been changed
+        if (imageUri != null) {
+            uploadNewProfileImage();
+        } else {
             progressDialog.dismiss();
-            if (task.isSuccessful()) {
-                Toast.makeText(EditprofileActivity.this, "Profile updated", Toast.LENGTH_SHORT).show();
-                finish();
+            Toast.makeText(this, "Profile updated", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    private void uploadNewProfileImage() {
+        // First, delete the existing image
+        databaseReference.child("imageUrl").get().addOnSuccessListener(snapshot -> {
+            String oldImageUrl = snapshot.getValue(String.class);
+            if (oldImageUrl != null) {
+                // Delete the old image from Firebase Storage
+                StorageReference oldImageRef = FirebaseStorage.getInstance().getReferenceFromUrl(oldImageUrl);
+                oldImageRef.delete().addOnCompleteListener(task -> {
+                    // Proceed to upload new image
+                    uploadImageToFirebase();
+                });
             } else {
-                Toast.makeText(EditprofileActivity.this, "Failed to save profile", Toast.LENGTH_SHORT).show();
+                // If no old image exists, directly upload the new one
+                uploadImageToFirebase();
             }
+        }).addOnFailureListener(e -> {
+            Toast.makeText(this, "Failed to delete old image", Toast.LENGTH_SHORT).show();
+            progressDialog.dismiss();
         });
     }
+
+    private void uploadImageToFirebase() {
+        StorageReference fileReference = storageReference.child(System.currentTimeMillis() + ".jpg");
+        fileReference.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
+                    String downloadUrl = uri.toString();
+                    // Save the new image URL to the database
+                    databaseReference.child("imageUrl").setValue(downloadUrl)
+                            .addOnCompleteListener(task -> {
+                                progressDialog.dismiss();
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(this, "Profile updated", Toast.LENGTH_SHORT).show();
+                                    finish();
+                                } else {
+                                    Toast.makeText(this, "Failed to save profile image", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }))
+                .addOnFailureListener(e -> {
+                    progressDialog.dismiss();
+                    Toast.makeText(this, "Image upload failed", Toast.LENGTH_SHORT).show();
+                });
+    }
+
 
     private void removeSkill(String skill) {
         skillsList.remove(skill);
@@ -216,5 +268,23 @@ public class EditprofileActivity extends AppCompatActivity {
         certificationsList.remove(certification);
         certificationsAdapter.notifyDataSetChanged();
     }
+    private void selectProfilePhoto() {
+        // Open image selector
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, 1);
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1 && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            imageUri = data.getData();  // Get the selected image URI
+
+            // Display the selected image in the profileImageView
+            profileImageView.setImageURI(imageUri);
+        }
+    }
+
 
 }

@@ -16,12 +16,32 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <ImageView
-        android:id="@+id/addQuestionBtn"
-        android:src="@drawable/baseline_add_24"
-        android:contentDescription="Add Question"
-        android:layout_width="wrap_content"
+    <!-- Horizontal LinearLayout for text and button -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:padding="8dp" />
+        android:gravity="end"
+        android:layout_marginTop="8dp">
+
+        <!-- TextView for 'Add a Question' -->
+        <TextView
+            android:id="@+id/addQuestionText"
+            android:text="Click on + to add question"
+            android:textSize="16sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:paddingEnd="8dp" />
+
+        <!-- ImageView for 'Add Question' button -->
+        <ImageView
+            android:id="@+id/addQuestionBtn"
+            android:src="@drawable/baseline_add_24"
+            android:contentDescription="Add Question"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp" />
+    </LinearLayout>
+
 </LinearLayout>

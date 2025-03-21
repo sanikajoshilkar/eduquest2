@@ -36,6 +36,15 @@ public class MyvideosActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_myvideos);
 
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Enable the navigation icon
+
+        // Handle navigation icon (logout button) click
+        toolbar.setNavigationOnClickListener(v -> {
+            finish(); // Go back to the previous activity
+        });
+
         // Initialize Firebase
         auth = FirebaseAuth.getInstance();
         currentUserId = auth.getCurrentUser().getUid(); // Get current user ID
