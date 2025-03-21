@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.VideoView;
 
@@ -13,10 +14,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.tkiet.eduquest.R;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
 
@@ -44,6 +41,7 @@ public class UnverifiedVideoAdapter extends RecyclerView.Adapter<UnverifiedVideo
         return new VideoViewHolder(view);
     }
 
+
     @Override
     public void onBindViewHolder(@NonNull VideoViewHolder holder, int position) {
         VideoModel video = videoList.get(position);
@@ -51,10 +49,25 @@ public class UnverifiedVideoAdapter extends RecyclerView.Adapter<UnverifiedVideo
         holder.title.setText(video.getTitle());
         holder.description.setText(video.getDescription());
 
+        // Set video URI
         holder.videoView.setVideoURI(Uri.parse(video.getVideoUrl()));
-        holder.videoView.setOnPreparedListener(mp -> {
-            mp.setLooping(true);
-            holder.videoView.start();
+
+        // Create and set up MediaController inside VideoView only
+        MediaController mediaController = new MediaController(context);
+        mediaController.setAnchorView(holder.videoView);
+        holder.videoView.setMediaController(mediaController);
+
+        // Show first frame only (don't auto-play)
+        holder.videoView.seekTo(1);
+
+        // Play/Pause on click
+        holder.videoView.setOnClickListener(v -> {
+            if (!holder.videoView.isPlaying()) {
+                holder.videoView.start();
+            } else {
+                holder.videoView.pause();
+            }
+            mediaController.show();  // Show controls on click
         });
 
         // Accept Button Click
@@ -63,6 +76,7 @@ public class UnverifiedVideoAdapter extends RecyclerView.Adapter<UnverifiedVideo
         // Reject Button Click
         holder.rejectButton.setOnClickListener(v -> listener.onReject(video.getVideoId(), video.getVideoUrl()));
     }
+
 
     @Override
     public int getItemCount() {
@@ -84,4 +98,5 @@ public class UnverifiedVideoAdapter extends RecyclerView.Adapter<UnverifiedVideo
             rejectButton = itemView.findViewById(R.id.rejectButton);
         }
     }
+
 }
