@@ -44,7 +44,8 @@ public class ProfileDetailActivity extends AppCompatActivity {
     private boolean isLiked;
     private FlexboxLayout skillsContainer;
     private FlexboxLayout certificationsContainer;
-
+    String profileUserId;
+    String abc;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,11 +64,11 @@ public class ProfileDetailActivity extends AppCompatActivity {
             finish();
             return;
         }
-
+        abc=userId;
         loadUserProfile();
         loadUploadedVideos();
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        String profileUserId = getIntent().getStringExtra("userId");
+        profileUserId = getIntent().getStringExtra("userId");
 
         userLikesRef = FirebaseDatabase.getInstance().getReference("Likes").child(profileUserId);
 
@@ -175,7 +176,7 @@ public class ProfileDetailActivity extends AppCompatActivity {
     private void loadUploadedVideos() {
         uploadedVideos = new ArrayList<>();
         DatabaseReference videosRef = FirebaseDatabase.getInstance().getReference("videos");
-        videosRef.orderByChild("addedBy").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+        videosRef.orderByChild("addedBy").equalTo(abc).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 uploadedVideos.clear();
