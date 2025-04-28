@@ -144,7 +144,7 @@ public class AccountFragment extends Fragment {
             Intent intent = null;
 
             if (v.getId() == R.id.account_profile_tv) {
-                intent = new Intent(getActivity(), AdminActivity.class);
+                intent = new Intent(getActivity(), EditprofileActivity.class);
             } else if (v.getId() == R.id.my_videos) {
                 intent = new Intent(getActivity(), MyvideosActivity.class);
             } else if (v.getId() == R.id.add_video) {
